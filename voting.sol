@@ -39,5 +39,18 @@ contract Voting{
         voting[msg.sender].hasVoted= true;
         voting[vAdd].totalVotes++;
     }
+    
+        function findPresenter() public view returns(address) {
+        require(msg.sender==manager,"You are not authorised!!");
+        uint largest = 0;
+        address presenter;
+        for(uint i = 0; i < totalVoters; i++){
+            if (voting[voters[i]].totalVotes > largest){
+                largest = voting[voters[i]].totalVotes;
+                presenter = voters[i];
+            }    
+    }
+    return presenter;
+    }
 
 }
