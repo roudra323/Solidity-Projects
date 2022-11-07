@@ -18,6 +18,7 @@ contract Ecommerce {
         uint256 productID;
         string name;
         uint256 price;
+        uint256 initialquantity;
     }
 
     struct ProductInfo {
@@ -25,11 +26,12 @@ contract Ecommerce {
         uint256 price;
         address seller;
         bool isAvalible;
+        uint256 quantity;
     }
 
     mapping(address => Seller) public sellerinfomap;
     mapping(address => Product[]) public productlist;
-    mapping(address => uint256) public buyerProduct;
+    mapping(address => uint256[]) public buyerProduct;
     mapping(uint256 => ProductInfo) public productInfolist;
 
     constructor() {
@@ -56,7 +58,11 @@ contract Ecommerce {
         sellerNO++;
     }
 
-    function regiProduct(string memory productName, uint256 _price) public {
+    function regiProduct(
+        string memory productName,
+        uint256 _price,
+        uint256 _quantity
+    ) public {
         require(
             sellerinfomap[msg.sender].isRegistered == true,
             "You aren't a registered seller."
@@ -66,12 +72,14 @@ contract Ecommerce {
         tempProduct.name = productName;
         tempProduct.price = _price;
         tempProduct.productID = productNO;
+        tempProduct.initialquantity = _quantity;
         productlist[msg.sender].push(tempProduct);
 
         productInfolist[productNO].name = productName;
         productInfolist[productNO].price = _price;
         productInfolist[productNO].seller = msg.sender;
         productInfolist[productNO].isAvalible = true;
+        productInfolist[productNO].quantity = _quantity;
 
         productNO++;
     }
@@ -86,6 +94,16 @@ contract Ecommerce {
             productInfolist[_productId].isAvalible == true,
             "Product not found."
         );
-        buyerProduct[msg.sender] = _productId;
+
+        require(productInfolist[_productId].quantity > 0, "Product stock out..");
+
+
+        buyerProduct[msg.sender].push(_productId);
+
+        productInfolist[_productId].quantity--;
+
+        if (productInfolist[_productId].quantity==0){
+            productInfolist[_productId].isAvalible = false;
+        }
     }
 }
